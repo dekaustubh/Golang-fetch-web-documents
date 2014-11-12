@@ -6,7 +6,6 @@ import (
 )
 
 // fillUrls initializes urls
-// TODO : Right now values are hardcoded
 func fillUrls(urls []string) {
 	urls[0] = "https://google.com"
 	urls[1] = "https://facebook.com"
@@ -31,7 +30,6 @@ func fillUrls(urls []string) {
 }
 
 // main starts execution for fetching urls, calculates average and prints them on successful execution
-// TODO : Right now size of urls is kept 20
 func main() {
 	urls := make([]string, 20)
 	fillUrls(urls)

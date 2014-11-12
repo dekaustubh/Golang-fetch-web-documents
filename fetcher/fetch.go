@@ -8,45 +8,45 @@ import (
 	"sync"
 )
 
-// Fetcher container for keeping track of TotalJobs, ExecutedJobs, NextJob. Contains Mutex for synchronization
+// Fetcher container for keeping track of TotalJobs, executedJobs, nextJob. Contains mutex for synchronization
 type Fetcher struct {
 	TotalJobs      int
-	NextJob        int
+	nextJob        int
 	SuccessfulJobs int
-	ExecutedJobs   int
+	executedJobs   int
 	StatusCode     int
 	Read           []byte
-	Urls           []string
-	Mutex          *sync.Mutex
+	urls           []string
+	mutex          *sync.Mutex
 	Total          int
-	Fetching       bool
+	fetching       bool
 }
 
-// Init copies urls into Fetcher's Urls, assigns urls length to TotalJobs and initializes Fetcher strucrure variables
+// Init copies urls into Fetcher's urls, assigns urls length to totalJobs and initializes Fetcher strucrure variables
 // returns nothing
 func (f *Fetcher) Init(urls []string) {
 	f.TotalJobs = len(urls)
-	f.NextJob = 0
+	f.nextJob = 0
 	f.SuccessfulJobs = 0
-	f.ExecutedJobs = 0
+	f.executedJobs = 0
 	f.Total = 0
-	f.Urls = urls
-	f.Mutex = &sync.Mutex{}
-	f.Fetching = false
+	f.urls = urls
+	f.mutex = &sync.Mutex{}
+	f.fetching = false
 }
 
-// getNextUrl synchronously updates Fetcher's NextJob unit and
+// getNextUrl synchronously updates Fetcher's nextJob unit and
 // returns url of next job if all jobs are not processed else returns "nil"
 func (f *Fetcher) getNextUrl() string {
-	f.Mutex.Lock()
-	if f.NextJob >= f.TotalJobs {
-		f.Mutex.Unlock()
+	f.mutex.Lock()
+	if f.nextJob >= f.TotalJobs {
+		f.mutex.Unlock()
 		return "nil"
 	}
-	fmt.Println("Fetching from => ", f.Urls[f.NextJob])
-	url := f.Urls[f.NextJob]
-	f.NextJob += 1
-	f.Mutex.Unlock()
+	fmt.Println("fetching from => ", f.urls[f.nextJob])
+	url := f.urls[f.nextJob]
+	f.nextJob += 1
+	f.mutex.Unlock()
 	return url
 }
 
@@ -54,13 +54,17 @@ func (f *Fetcher) getNextUrl() string {
 // returns error if StartFetching is alreay running
 func (fetch *Fetcher) StartFetching() error {
 
-	fetch.Mutex.Lock()
-	if fetch.Fetching {
-		fetch.Mutex.Unlock()
+	if fetch.mutex == nil {
+		return errors.New("Not initialized")
+	}
+
+	fetch.mutex.Lock()
+	if fetch.fetching {
+		fetch.mutex.Unlock()
 		return errors.New("Already fetching")
 	}
-	fetch.Fetching = true
-	fetch.Mutex.Unlock()
+	fetch.fetching = true
+	fetch.mutex.Unlock()
 
 	listener1 := make(chan int)
 	listener2 := make(chan int)
@@ -71,12 +75,12 @@ func (fetch *Fetcher) StartFetching() error {
 	go fetchPage(fetch.getNextUrl(), listener3)
 
 	for {
-		if fetch.ExecutedJobs == fetch.TotalJobs {
+		if fetch.executedJobs == fetch.TotalJobs {
 			break
 		}
 		select {
 		case rec1 := <-listener1:
-			fetch.ExecutedJobs += 1
+			fetch.executedJobs += 1
 			if rec1 != -1 {
 				fetch.Total += rec1
 				fetch.SuccessfulJobs += 1
@@ -84,7 +88,7 @@ func (fetch *Fetcher) StartFetching() error {
 			go fetchPage(fetch.getNextUrl(), listener1)
 
 		case rec2 := <-listener2:
-			fetch.ExecutedJobs += 1
+			fetch.executedJobs += 1
 			if rec2 != -1 {
 				fetch.Total += rec2
 				fetch.SuccessfulJobs += 1
@@ -92,7 +96,7 @@ func (fetch *Fetcher) StartFetching() error {
 			go fetchPage(fetch.getNextUrl(), listener2)
 
 		case rec3 := <-listener3:
-			fetch.ExecutedJobs += 1
+			fetch.executedJobs += 1
 			if rec3 != -1 {
 				fetch.Total += rec3
 				fetch.SuccessfulJobs += 1
