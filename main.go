@@ -5,9 +5,13 @@ import (
 	"fmt"
 )
 
+const (
+	URLCOUNT = 20
+)
+
 // fillUrls initializes urls
 func fillUrls(urls []string) {
-	urls[0] = "https://google.com"
+	urls[0] = "http://www.tonycuffe.com/mp3/tail%20toddle.mp3"
 	urls[1] = "https://facebook.com"
 	urls[2] = "https://google.com"
 	urls[3] = "https://slack.com"
@@ -31,7 +35,7 @@ func fillUrls(urls []string) {
 
 // main starts execution for fetching urls, calculates average and prints them on successful execution
 func main() {
-	urls := make([]string, 20)
+	urls := make([]string, URLCOUNT)
 	fillUrls(urls)
 	var fetch = fetcher.Fetcher{}
 	fetch.Init(urls)

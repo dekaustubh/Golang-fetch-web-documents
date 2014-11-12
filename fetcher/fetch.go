@@ -122,6 +122,7 @@ func fetchPage(url string, listener chan int) {
 	}
 	contents, err := ioutil.ReadAll(response.Body)
 	if err == nil {
+		fmt.Println(" response content length ", response.ContentLength)
 		fmt.Println("Done fetching =>", url, "Size=>", len(contents))
 	}
 	listener <- len(contents)
